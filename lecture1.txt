@@ -1,4 +1,5 @@
-function myFunction() {
+//get values from spreadsheet
+function readSpreadsheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet()
   const sheet = ss.getSheetByName("Sheet1")
   var StartRow = 2
@@ -7,4 +8,18 @@ function myFunction() {
   var dataRange = sheet.getRange(2,1,rows-1,cols)
   var data = dataRange.getValues()
   Logger.log(data)
+}
+
+//set single cell value from sheet
+function writeToCell() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet()
+  const sheet = ss.getSheetByName("Sheet1")
+  sheet.getRange(19, 1).setValue("test");
+}
+
+//set value to a range
+function writeToRange() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet()
+  const sheet = ss.getSheetByName("Sheet1")
+  sheet.getRange("A20:B20").setValues([["test","123"]]);
 }
