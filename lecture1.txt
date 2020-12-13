@@ -1,0 +1,10 @@
+function myFunction() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet()
+  const sheet = ss.getSheetByName("Sheet1")
+  var StartRow = 2
+  var rows = sheet.getLastRow()
+  var cols = sheet.getLastColumn()
+  var dataRange = sheet.getRange(2,1,rows-1,cols)
+  var data = dataRange.getValues()
+  Logger.log(data)
+}
