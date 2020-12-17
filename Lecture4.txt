@@ -1,0 +1,49 @@
+function postRequest() {
+  var sourceSpreadsheet = SpreadsheetApp.getActive();
+  var sheetNames = getAllSheetNames();
+  for(var i = 0; i <= sheetNames.length-1; i++){
+    const mySheet = sourceSpreadsheet.getSheetByName(sheetNames[i]);
+    const data = mySheet.getDataRange().getValues();
+    var externalLink = mySheet.getRange(2, 12).getValue();
+    var quantity = mySheet.getRange(2, 13).getValue();
+    var sourceId = mySheet.getRange(2, 14).getValue();
+    var rowcount = mySheet.getLastRow();
+    for(var j = 1; j <= rowcount-1; j++)
+    {
+      if(data[j][6] != "y")
+      {
+        var thisphone = data[j][2];
+        var thisaddress = data[j][3];
+        var thisname = data[j][4];
+        mySheet.getRange(j+1, 7).setValue(postToAffiliateWithOptions(externalLink, sourceId, thisname, thisphone, thisaddress, quantity));
+        mySheet.getRange(j+1, 6).setValue("y");
+      }
+     }
+  }
+ }
+
+function postToAffiliateWithOptions(link, sourceId, name, phone, address, quantity) {
+     var formData = {
+        'source_id': sourceId,
+        'name': name,
+        'phone': phone,
+        'quantity': quantity,
+        'address': address,
+        'zipcode': '12345'};
+
+      var options = {
+        'method' : 'post',
+        'payload' : formData
+      };
+      var response = UrlFetchApp.fetch(link, options);
+      return response;
+}
+
+ function getAllSheetNames(){
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var spreadSheetsInA = activeSpreadsheet.getSheets();
+  sheetNameArray = spreadSheetsInA.map(function(sheet) {
+    return [sheet.getName()];
+  });
+  return sheetNameArray;
+}
