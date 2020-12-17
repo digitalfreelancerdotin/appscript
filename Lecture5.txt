@@ -1,0 +1,32 @@
+function onOpen( ){
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Menu')
+      .addItem('Send Whatsapp Message', 'myFunction')
+      .addSeparator()
+      .addToUi();
+}
+function myFunction() {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var startRow = 2;  // First row of data to process - 2 exempts my header row
+  var numRows = sheet.getLastRow();   // Number of rows to process
+  var numColumns = sheet.getLastColumn();
+  var dataRange = sheet.getRange(startRow, 1, numRows-1, numColumns); 
+  var data = dataRange.getValues();
+  for (var i = 0; i < data.length; ++i) {
+    var row = data[i];
+    var fName =     row[0]; 
+    var lName =     row[1];  
+    var mobileNo =  row[2]; 
+    var mess =      row[4];
+    Logger.log(mess);   
+    var my_apikey = "XXXXXXXXXX";
+    var destination = mobileNo; 
+    var message = mess; 
+    var api_url = "http://panel.apiwha.com/send_message.php"; 
+    api_url += "?apikey="+ my_apikey; 
+    api_url += "&number="+ destination; 
+    api_url += "&text="+ encodeURIComponent (message); 
+    var response = UrlFetchApp.fetch(api_url);
+    Logger.log(response.getContentText());   
+  }
+}
