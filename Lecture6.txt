@@ -1,0 +1,65 @@
+function onOpen() {
+  SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
+      .createMenu('Daily Mail')
+      .addItem('use template1', 'template1')
+      .addItem('use template2', 'template2')
+      .addToUi();
+}
+
+function template1(){
+    sendEmails("template1");
+}
+
+function template2(){
+    sendEmails("template2");
+}
+
+function sendEmails(templateName) {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var startingRow = getAlreadySentRowCount();
+  var totalRows = getTotalRowCount();
+  for (var i = startingRow; i <= totalRows; i++) {
+    var data = sheet.getRange("A"+i+":I"+i).getValues();
+
+    var emailAddress = data[0][0]; // First column
+    var subject = "New lead email"; // Second column
+    // var templateName = data[0][7];
+    const htmlTemplate = HtmlService.createTemplateFromFile(templateName);
+    htmlTemplate.firstName = data[0][1];
+    htmlTemplate.landingPage = data[0][8];
+    const htmlForEmail = htmlTemplate.evaluate().getContent();
+    //GmailApp.sendEmail(emailAddress, subject, "Please open this email with a client that supports HTML", { htmlBody:  htmlForEmail });
+    MailApp.sendEmail(emailAddress, subject, "Please open this email with a client that supports HTML", { htmlBody:  htmlForEmail });
+    sheet.getRange(i, 10).setValue("Y");
+    SpreadsheetApp.flush();
+  }
+}
+
+function test(){
+  Logger.log(getTotalRowCount());
+  Logger.log(getAlreadySentRowCount());
+}
+
+function getAlreadySentRowCount(){
+    var ws = SpreadsheetApp.getActiveSheet();
+    var Jvals = ws.getRange("J:J").getValues();
+    Jvals = removeBlankRowsFromRowResults(Jvals);
+    var Jlast = Jvals.filter(String).length;
+    return Jlast+1;
+}
+
+function getTotalRowCount(){
+    var ws = SpreadsheetApp.getActiveSheet();
+    var Avals = ws.getRange("A:A").getValues();
+    Avals = removeBlankRowsFromRowResults(Avals);
+    var Alast = Avals.filter(String).length;
+    return Alast;
+}
+
+//Removes blank rows from data array of spreadsheet
+function removeBlankRowsFromRowResults(spreadSheetRangeData) {
+  var filteredVal = spreadSheetRangeData.filter(function(r){
+    return r.join("").length>0;
+  });
+  return filteredVal;
+}
