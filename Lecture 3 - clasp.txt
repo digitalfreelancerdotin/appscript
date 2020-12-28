@@ -1,0 +1,16 @@
+//https://github.com/google/clasp
+
+//INSTALLATION
+npm install -g @google/clasp
+
+//LOGIN
+clasp login
+
+//CLONE
+clasp clone 'script id'
+
+//to pull changes made in the app script editor
+clasp pull latest
+
+//to push the changes
+clasp push
