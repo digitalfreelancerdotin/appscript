@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top" />
+  </head>
+  <body>
+    <h1 style="color:blue"><u>Note taker</u></h1>
+    <br />
+    
+    <input type="text" id="input-box" />
+    <label for="input-box">Input</label>
+    
+    <br /><br />
+    <button id="get-value">Get Value</button>
+    
+    <br />
+    <button id="set-value">Set Value</button>
+    <br />
+    <br />
+    <button onclick="google.script.host.close()">Close</button>
+    
+      <hr/>
+      <textarea rows="20" cols="30" placeholder="Paste your Data here. Do not format. Do not worry if it looks weird." id="set-textarea">Show value of the selected cell.</textarea> 
+      <br/>
+<br/>
+  <input type="button" class="button" value="Show cell value from selected cell" id="getTAValue">
+  <br/><br/>
+  
+  <input type="button" class="button" value="Update value in sheet2" id="updateInOtherSheet">
+
+
+    <script>
+      var intVal = <?= initialValue ?>;
+      document.getElementById('input-box').value = intVal;
+
+      document.getElementById('get-value').addEventListener('click', function(){
+        google.script.run.withSuccessHandler(showValue).getNewValue();
+      });
+
+      document.getElementById('getTAValue').addEventListener('click', function(){
+        google.script.run.withSuccessHandler(showTAValue).returnActiveCellContents();
+      });
+        
+      function showValue(myValue){
+          document.getElementById('input-box').value = myValue;
+      }
+
+      function showTAValue(myValue){
+          document.getElementById('set-textarea').value = myValue;
+      }
+      
+      document.getElementById('set-value').addEventListener('click', function(){
+        var inputValue = document.getElementById('input-box').value;
+        google.script.run.setValue(inputValue);
+      });
+      
+      document.getElementById('updateInOtherSheet').addEventListener('click', function(){
+        var inputValue = document.getElementById('set-textarea').value;
+        var cellRangeFor = google.script.run.SELECTED_RANGE();
+        google.script.run.updateValueInOtherSheetWithRange(inputValue);
+      });
+           
+    </script>
+  </body>
+</html>

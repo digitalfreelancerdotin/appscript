@@ -1,0 +1,65 @@
+var SHEET = SpreadsheetApp.getActiveSheet();
+
+function onOpen() {
+  SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
+      .createMenu('Custom Menu')
+      .addItem('Show sidebar', 'showSidebar')
+      .addToUi();
+}
+
+function showSidebar() {
+  var ui = SpreadsheetApp.getUi();
+  var tmp = HtmlService.createTemplateFromFile("Page");
+  tmp.initialValue = initialValue();
+  var html = tmp.evaluate();
+  html.setTitle("Sidebar").setWidth(300);
+  ui.showSidebar(html);
+}
+
+function initialValue() {
+  return SHEET.getRange(2, 1).getValue();
+}
+
+function getNewValue() {
+  return SHEET.getRange(2, 1).getValue();
+}
+
+function setValue(inputValue) {
+  SHEET.getRange(2, 2).setValue(inputValue);
+}
+
+function returnActiveCellContents() {
+  var ss= SpreadsheetApp.getActiveSpreadsheet();
+  var s=ss.getActiveSheet();
+  var r= s.getActiveCell();
+  var v= r.getValue();
+  return s.getActiveRange().getA1Notation()+"~"+v;
+}
+
+function SELECTED_RANGE() {
+  return SpreadsheetApp.getActive().getActiveRange().getA1Notation();
+}
+
+function updateValueInOtherSheetWithRange(inputForNextSheet){
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/16yxf8fpdkMcWmhcure2a4r3TS4S9bjsGzisTjix5RHA/edit#gid=0");
+  var sheet1 = ss.getSheetByName("sheet1");
+  var sheet2 = ss.getSheetByName("sheet2");
+
+  //get all (1,x) values in an array
+  var data = sheet2.getDataRange().getValues();
+  
+  var myRowValues = [];
+  data.forEach(function(r){
+    myRowValues.push(r[0]);
+  })
+  
+  if(myRowValues.indexOf(inputForNextSheet.split("~")[0]) > 1){
+    //if its in there, update
+    var rowToBeUpdated = myRowValues.indexOf(inputForNextSheet.split("~")[0]) + 1; 
+    sheet2.getRange(rowToBeUpdated, 2).setValue("");
+    sheet2.getRange(rowToBeUpdated, 2).setValue(inputForNextSheet.split("~")[1]);
+  }else{
+    // if not then append
+    sheet2.appendRow([inputForNextSheet.split("~")[0],inputForNextSheet.split("~")[1]]);
+  }
+}
