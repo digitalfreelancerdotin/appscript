@@ -1,0 +1,37 @@
+function onOpen() {
+  SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
+      .createMenu('importcsv')
+      .addItem("Import shipments", "importCSVFromGoogleDrive")
+      .addItem("Set up trigger", "activateTrigger")
+      .addToUi();
+}
+
+function activateTrigger(){
+  var triggers = ScriptApp.getProjectTriggers();
+  Logger.log(triggers);
+  if(triggers.length > 0){
+    for (var i=0;i<=triggers.length;i++) {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  ScriptApp.newTrigger("sortByETADestinationRevisedAscending").timeBased().everyMinutes(1).create();
+  SpreadsheetApp.getActiveSpreadsheet().toast("Trigger set up success!");
+}
+
+function importCSVFromGoogleDrive() {
+  var file = DriveApp.getFilesByName("shipments.csv").next();
+  var csvData = Utilities.parseCsv(file.getBlob().getDataAsString());
+  var sheet = SpreadsheetApp.getActiveSheet();
+  sheet.getRange(1, 1, csvData.length, csvData[0].length).setValues(csvData);  
+}
+
+function sortByETADestinationRevisedAscending(){
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var StartRow = 2;
+  var rows = sheet.getLastRow();
+  var cols = sheet.getLastColumn();
+  var dataRange = sheet.getRange(2,1,rows-1,cols);
+  dataRange.sort([
+    {column:13, ascending: true}
+  ]);
+}
