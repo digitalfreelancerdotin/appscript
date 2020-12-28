@@ -1,0 +1,57 @@
+function onOpen() {
+  SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
+      .createMenu('YouTube')
+      .addItem('GetChannelStats', 'getChannelInfoByRowNumberTryCatch')
+      .addToUi();
+}
+
+//IMPORTANT: Enable youtube API
+function getChannelInfoByRowNumberTryCatch(r){
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ChannelList");
+  var StartRow = 2;
+  var rows = sheet.getLastRow();
+  var cols = sheet.getLastColumn();
+  //var dataRange = sheet.getRange(2,1,rows-1,cols);
+  var list = sheet.getRange(2, 1, sheet.getRange("B1").getDataRegion().getLastRow(),cols).getValues();
+  var dataRange = sheet.getRange(2,1,rows,cols);
+  var data = dataRange.getValues();
+  var sanitizedData = removeBlankRowsFromRowResults(data);
+  var numberOfSheets = 0;
+  for (var r = 0; r < sanitizedData.length; r++) {
+    var sheetRowNum = r+2;
+    try{
+      sheet.getRange("B"+sheetRowNum).setFormula("=PARSECHANNELID(A"+sheetRowNum+")");
+      var vid = sheet.getRange("B"+sheetRowNum).getValue();
+      var data = YouTube.Channels.list('snippet, statistics', {'id': vid});
+      var item = data.items[0];
+      var info = [
+        item.snippet.title, 
+        item.snippet.publishedAt, 
+        item.statistics.videoCount, 
+        item.statistics.viewCount, 
+        item.statistics.subscriberCount
+      ];
+      sheet.getRange("C"+sheetRowNum+":G"+sheetRowNum).setValues([info]);
+    }catch(e){
+      // Logger.log(e);
+      sheet.getRange("C"+sheetRowNum).setValue("Channel banned").setBackground("red");
+    }
+  }
+}
+
+function getChannelInfoByRowNumber(r){
+//  var sheet = SpreadsheetApp.getActiveSheet();
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ChannelList");
+  var vid = sheet.getRange("B"+r).getValue();
+  var data = YouTube.Channels.list('snippet, statistics', {'id': vid});
+  var item = data.items[0];
+  var info = [item.snippet.title, item.snippet.publishedAt, item.statistics.videoCount, item.statistics.viewCount, item.statistics.subscriberCount];
+  sheet.getRange("C"+r+":G"+r).setValues([info]);
+}
+
+function removeBlankRowsFromRowResults(spreadSheetRangeData) {
+  var filteredVal = spreadSheetRangeData.filter(function(r){
+    return r.join("").length>0;
+  });
+  return filteredVal;
+}

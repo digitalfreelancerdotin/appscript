@@ -1,0 +1,6 @@
+function PARSECHANNELID(inputCellVal) {
+  return inputCellVal.substring(
+      inputCellVal.lastIndexOf("channel/"), 
+      inputCellVal.length
+  ).replace("channel/","");
+}
