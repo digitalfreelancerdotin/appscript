@@ -1,0 +1,109 @@
+
+function onOpen() {
+  SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
+      .createMenu('Bitblinx')
+      .addItem("Set up trigger", "activateTrigger")
+      .addToUi();
+}
+
+function activateTrigger(){
+  var triggers = ScriptApp.getProjectTriggers();
+  if(triggers.length > 0){
+    for (var i=0;i<=triggers.length;i++) {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  // ScriptApp.newTrigger("runOnEdit").timeBased().everyMinutes(1).create();
+  ScriptApp.newTrigger("updateFormulaForRow").timeBased().everyMinutes(5).create();
+  SpreadsheetApp.getActiveSpreadsheet().toast("Trigger set up success!");
+}
+
+function getLastPrice(coin1, coin2) {
+  var url = "https://trade.bitblinx.com/api/prices/"+coin1+"-"+coin2;
+
+  var formData = {
+        'Authorization': 'api-sx <5daed4-e7308ea6-0a78-40ec-9722-43c4462a882c-5dbb1239735bd58d47>',
+        'Accept-Language': 'en',
+        'Content-Type': 'application/json'};
+  var options = {
+    'method' : 'get',
+    'payload' : formData
+  };
+  var response = UrlFetchApp.fetch(url, formData);
+  var jsonResponse = JSON.parse(response);
+  var lastVal = jsonResponse.result[0].last;
+  return format(lastVal,10);
+}
+
+function getAskPrice(coin1, coin2) {
+  var url = "https://trade.bitblinx.com/api/prices/"+coin1+"-"+coin2;
+  var formData = {
+    'Authorization': 'api-sx <5daed4-e7308ea6-0a78-40ec-9722-43c4462a882c-5dbb1239735bd58d47>',
+    'Accept-Language': 'en',
+    'Content-Type': 'application/json'};
+
+    var options = {
+      'method' : 'get',
+      'payload' : formData
+    };
+      
+    var response = UrlFetchApp.fetch(url, formData);
+    var jsonResponse = JSON.parse(response);
+  
+  var askVal = jsonResponse.result[0].ask;
+  return format(askVal,10);
+}
+
+function getBidPrice(coin1, coin2) {
+var url = "https://trade.bitblinx.com/api/prices/"+coin1+"-"+coin2;
+var formData = {
+        'Authorization': 'api-sx <5daed4-e7308ea6-0a78-40ec-9722-43c4462a882c-5dbb1239735bd58d47>',
+        'Accept-Language': 'en',
+        'Content-Type': 'application/json'};
+
+      var options = {
+        'method' : 'get',
+        'payload' : formData
+      };
+    var response = UrlFetchApp.fetch(url, formData);
+    var jsonResponse = JSON.parse(response);
+  
+  var bidVal = jsonResponse.result[0].bid;
+  return format(bidVal,10);
+}
+
+function format(x, n){
+    x = parseFloat(x);
+    n = n || 2;
+    return parseFloat(x.toFixed(n))
+}
+
+function updateFormulaForRow(){
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Sheet1");
+  var StartRow = 3;
+  var rows = sheet.getLastRow();
+  var cols = sheet.getLastColumn();
+  var dataRange = sheet.getRange(2,1,rows,cols);
+  var data = dataRange.getValues();
+  var sanitizedData = removeBlankRowsFromRowResults(data);
+  Logger.log(sanitizedData);
+  for (var i = 1; i < sanitizedData.length; ++i) {
+    var row = sanitizedData[i];
+    var askP = getAskPrice(row[1],row[2]);
+    var bidP = getBidPrice(row[1],row[2]);
+    sheet.getRange(i+2, 4).setValue(askP);
+    sheet.getRange(i+2, 5).setValue(bidP);
+  }
+  var colorsC = ["red", "green","blue","black","violet"];
+  var randN = Math.floor(Math.random() * 5);
+  sheet.getRange(1,1,rows,cols).setFontColor(colorsC[randN]);
+}
+
+//Removes blank rows from data array of spreadsheet
+function removeBlankRowsFromRowResults(spreadSheetRangeData) {
+  var filteredVal = spreadSheetRangeData.filter(function(r){
+    return r.join("").length>0;
+  });
+  return filteredVal;
+}
